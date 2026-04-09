@@ -337,6 +337,160 @@ body::before {
   opacity: .85;
 }
 
+/* ── Historical Date Search ────────────────────────────── */
+.hist-panel { border-left: 3px solid rgba(6,182,212,0.8) !important; }
+
+.hist-search-row {
+  display: flex;
+  gap: 7px;
+  margin-bottom: 10px;
+}
+
+.hist-date-input {
+  flex: 1;
+  background: rgba(6,182,212,0.08);
+  border: 1px solid rgba(6,182,212,0.3);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: .78rem;
+  padding: 7px 10px;
+  outline: none;
+  font-family: 'Inter', sans-serif;
+  transition: border-color .2s;
+  color-scheme: dark;
+}
+.hist-date-input:focus { border-color: var(--turquoise); box-shadow: 0 0 10px rgba(6,182,212,0.2); }
+
+.hist-search-btn {
+  background: linear-gradient(135deg, var(--sea-teal), var(--turquoise));
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: .75rem;
+  font-weight: 700;
+  padding: 7px 14px;
+  cursor: pointer;
+  transition: opacity .2s, box-shadow .2s;
+  white-space: nowrap;
+}
+.hist-search-btn:hover { opacity: .88; box-shadow: 0 0 14px rgba(6,182,212,0.4); }
+
+.hist-results { display: flex; flex-direction: column; gap: 10px; }
+.hist-results.hidden { display: none; }
+
+.hist-date-label {
+  font-size: .67rem;
+  color: var(--text-muted);
+  letter-spacing: .8px;
+  text-align: center;
+  padding-top: 2px;
+}
+
+.hist-total-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, rgba(6,182,212,0.1), rgba(14,116,144,0.12));
+  border: 1px solid rgba(6,182,212,0.2);
+  border-radius: 10px;
+  padding: 11px 14px;
+}
+.hist-total-num {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 2.4rem;
+  font-weight: 800;
+  color: var(--cyan);
+  line-height: 1;
+  text-shadow: 0 0 20px rgba(6,182,212,0.5);
+}
+.hist-total-label { font-size: .72rem; font-weight: 700; color: var(--text); }
+.hist-total-diff  { font-size: .67rem; font-weight: 600; margin-top: 2px; }
+
+/* 7-day mini bar chart */
+.hist-week-chart {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 4px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 10px;
+  padding: 10px 8px 6px;
+}
+
+.wk-bar-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  flex: 1;
+}
+
+.wk-bar-val {
+  font-size: .58rem;
+  color: var(--text-muted);
+  line-height: 1;
+}
+.wk-bar-col.selected .wk-bar-val { color: var(--cyan); font-weight: 700; }
+
+.wk-bar-wrap {
+  width: 100%;
+  height: 44px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.wk-bar-fill {
+  width: 100%;
+  background: rgba(6,182,212,0.35);
+  border-radius: 3px 3px 0 0;
+  transition: height .4s ease;
+}
+.wk-bar-col.selected .wk-bar-fill {
+  background: linear-gradient(180deg, var(--cyan), var(--sea-teal));
+  box-shadow: 0 0 8px rgba(6,182,212,0.6);
+}
+
+.wk-bar-day {
+  font-size: .58rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+.wk-bar-col.selected .wk-bar-day { color: var(--cyan); font-weight: 700; }
+
+.hist-week-caption {
+  font-size: .62rem;
+  color: var(--text-muted);
+  text-align: center;
+  opacity: .6;
+  margin-top: -4px;
+}
+
+/* Type breakdown */
+.ht-types { display: flex; flex-direction: column; gap: 5px; }
+
+.ht-type-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: .72rem;
+}
+.ht-dot   { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.ht-label { width: 72px; color: var(--text-muted); flex-shrink: 0; font-size: .68rem; }
+.ht-bar-wrap {
+  flex: 1;
+  height: 5px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.ht-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width .5s ease;
+}
+.ht-count { width: 24px; text-align: right; color: var(--text); font-weight: 700; font-size: .7rem; }
+
 /* ── Fact list ─────────────────────────────────────────── */
 .fact-list { display: flex; flex-direction: column; }
 
