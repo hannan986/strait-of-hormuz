@@ -1070,7 +1070,7 @@ body::before {
     align-items: center;
     gap: 9px;
     position: absolute;
-    bottom: 24px;
+    bottom: calc(72px + env(safe-area-inset-bottom, 0px));
     right: 16px;
     background: linear-gradient(135deg, #0c4a6e, #0e7490, #06b6d4);
     background-size: 200% 200%;
@@ -1139,9 +1139,12 @@ body::before {
   .fg-item     { padding: 8px 10px; font-size: .78rem; }
   .tl-row      { padding: 8px 10px; }
 
-  /* Ticker smaller */
-  .ticker-wrap  { height: 30px; }
-  .ticker-label { font-size: .58rem; padding: 0 10px; }
+  /* Ticker — safe area bottom for iPhone home bar */
+  .ticker-wrap  {
+    height: calc(30px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .ticker-label   { font-size: .58rem; padding: 0 10px; }
   .ticker-content { font-size: .65rem; }
 
   /* Strait marker smaller on mobile */
