@@ -54,26 +54,34 @@ document.getElementById('toggleSidebar').addEventListener('click', () => {
   document.getElementById('sidebar').classList.toggle('hidden');
 });
 
-// ── Mobile drawer (FAB + backdrop + handle) ────────────────────
+// ── Mobile drawer ──────────────────────────────────────────────
 const sidebar  = document.getElementById('sidebar');
 const backdrop = document.getElementById('drawerBackdrop');
 const fab      = document.getElementById('fabBtn');
 
+function isMobile() { return window.innerWidth <= 700; }
+
 function openDrawer() {
   sidebar.classList.add('mobile-open');
   backdrop.classList.add('visible');
-  fab.style.display = 'none';
+  fab.classList.add('fab-hidden');
 }
 
 function closeDrawer() {
   sidebar.classList.remove('mobile-open');
   backdrop.classList.remove('visible');
-  fab.style.display = '';
+  fab.classList.remove('fab-hidden');
 }
 
 fab.addEventListener('click', openDrawer);
 backdrop.addEventListener('click', closeDrawer);
+
+// Both the pill handle AND the close button close the drawer
 document.getElementById('drawerHandle').addEventListener('click', closeDrawer);
+document.getElementById('drawerCloseBtn').addEventListener('click', e => {
+  e.stopPropagation(); // prevent bubbling to drawerHandle
+  closeDrawer();
+});
 
 // Mobile map source switcher (inside drawer)
 document.querySelectorAll('.msrc-btn').forEach(btn => {
