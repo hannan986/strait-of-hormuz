@@ -43,16 +43,26 @@
       <span>Click any vessel on the map to see its name, flag, country, speed &amp; destination in real time.</span>
     </div>
 
-    <!-- ── DATE SEARCH ── -->
+    <!-- ── TRAFFIC HISTORY ── -->
     <div class="panel hist-panel">
-      <div class="panel-header"><span>📅</span> Daily Traffic Search</div>
-      <div class="hist-search-row">
+      <div class="panel-header"><span>📅</span> Traffic by Date</div>
+
+      <!-- Quick tabs -->
+      <div class="hist-tabs">
+        <button class="htab active" data-tab="today">Today</button>
+        <button class="htab" data-tab="yesterday">Yesterday</button>
+        <button class="htab" data-tab="week">Last 7 Days</button>
+        <button class="htab" data-tab="custom">📆 Pick Date</button>
+      </div>
+
+      <!-- Custom date picker (hidden until "Pick Date" tab) -->
+      <div class="hist-datepicker" id="histDatepicker">
         <input type="date" id="histDate" class="hist-date-input" />
-        <button class="hist-search-btn" id="histSearchBtn">Search</button>
+        <button class="hist-search-btn" id="histSearchBtn">Go</button>
       </div>
-      <div id="histResults" class="hist-results hidden">
-        <!-- filled by JS -->
-      </div>
+
+      <!-- Results area -->
+      <div id="histResults"><!-- filled by JS --></div>
     </div>
 
     <!-- Strait facts -->

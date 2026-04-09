@@ -60,10 +60,8 @@ document.getElementById('closeMarker').addEventListener('click', () => {
 });
 
 // ══════════════════════════════════════════════════════════════
-//  HISTORICAL DAILY TRAFFIC
-//  Uses a deterministic hash so every date always returns the
-//  same realistic numbers (based on actual Strait of Hormuz
-//  traffic statistics: ~50-100 vessels/day, ~1,700+/month)
+//  TRAFFIC HISTORY  —  deterministic realistic AIS stats
+//  Based on real Strait of Hormuz averages: ~63 vessels/day
 // ══════════════════════════════════════════════════════════════
 
 function dateHash(str) {
@@ -79,114 +77,211 @@ function getDayData(dateStr) {
   const h    = dateHash(dateStr);
   const date = new Date(dateStr + 'T12:00:00Z');
   if (isNaN(date)) return null;
-
-  const month    = date.getUTCMonth();               // 0-11
-  // Oil demand peaks Dec-Feb, slight dip Jun-Aug
+  const month    = date.getUTCMonth();
   const seasonal = 1 + 0.10 * Math.cos((month - 0.5) * Math.PI / 6);
-  const dayVar   = 0.88 + ((h & 0xff) / 255) * 0.26; // ±13% daily variation
+  const dayVar   = 0.88 + ((h & 0xff) / 255) * 0.26;
   const base     = Math.round(63 * seasonal * dayVar);
-
   const rnd = (seed, lo, hi) => lo + Math.round(((dateHash(dateStr + seed) & 0xff) / 255) * (hi - lo));
-
   const tankers   = rnd('t', Math.round(base * .30), Math.round(base * .40));
   const lng       = rnd('l', Math.round(base * .14), Math.round(base * .22));
   const cargo     = rnd('c', Math.round(base * .18), Math.round(base * .26));
   const container = rnd('o', Math.round(base * .08), Math.round(base * .15));
   const naval     = rnd('n', 1, 5);
   const other     = Math.max(0, base - tankers - lng - cargo - container - naval);
-
   return { date: dateStr, total: base, tankers, lng, cargo, container, naval, other };
 }
 
-function getWeekData(dateStr) {
-  const d = new Date(dateStr + 'T12:00:00Z');
+function getLastNDays(n) {
   const days = [];
-  for (let i = -3; i <= 3; i++) {
-    const nd = new Date(d);
-    nd.setUTCDate(d.getUTCDate() + i);
-    const s = nd.toISOString().slice(0, 10);
-    days.push(getDayData(s));
+  for (let i = n - 1; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    days.push(getDayData(d.toISOString().slice(0, 10)));
   }
   return days;
 }
 
-function renderHistResults(data, weekData) {
-  const avg   = 63;
-  const diff  = data.total - avg;
-  const diffStr = (diff >= 0 ? '+' : '') + diff;
-  const diffColor = diff >= 0 ? '#52b788' : '#e76f51';
+function fmtDate(dateStr, opts) {
+  return new Date(dateStr + 'T12:00:00Z').toLocaleDateString('en', { timeZone: 'UTC', ...opts });
+}
 
-  const maxWeek = Math.max(...weekData.map(d => d.total));
-
-  const bars = weekData.map(d => {
-    const isSelected = d.date === data.date;
-    const h = Math.round((d.total / maxWeek) * 44);
-    const dayName = new Date(d.date + 'T12:00:00Z')
-      .toLocaleDateString('en', { weekday: 'short', timeZone: 'UTC' });
-    return `<div class="wk-bar-col ${isSelected ? 'selected' : ''}">
-      <div class="wk-bar-val">${d.total}</div>
-      <div class="wk-bar-wrap"><div class="wk-bar-fill" style="height:${h}px"></div></div>
-      <div class="wk-bar-day">${dayName}</div>
+// ── Render helpers ─────────────────────────────────────────────
+function typeBreakdown(data) {
+  const types = [
+    { label: '🛢 Oil Tankers', val: data.tankers,   color: '#f59e0b' },
+    { label: '💨 LNG / LPG',   val: data.lng,        color: '#06b6d4' },
+    { label: '📦 Cargo',        val: data.cargo,      color: '#3b82f6' },
+    { label: '🚢 Container',    val: data.container,  color: '#8b5cf6' },
+    { label: '⚓ Naval',         val: data.naval,      color: '#ef4444' },
+    { label: '🚤 Other',         val: data.other,      color: '#94a3b8' },
+  ];
+  return types.map(t => {
+    const pct = (t.val / data.total * 100).toFixed(0);
+    return `<div class="ht-type-row">
+      <span class="ht-label">${t.label}</span>
+      <div class="ht-bar-wrap"><div class="ht-bar-fill" style="width:${pct}%;background:${t.color}"></div></div>
+      <span class="ht-count">${t.val}</span>
     </div>`;
   }).join('');
+}
 
-  const types = [
-    { label: 'Oil Tankers',    val: data.tankers,   color: '#f59e0b', pct: (data.tankers   / data.total * 100).toFixed(0) },
-    { label: 'LNG / LPG',     val: data.lng,        color: '#06b6d4', pct: (data.lng       / data.total * 100).toFixed(0) },
-    { label: 'Cargo',          val: data.cargo,      color: '#3b82f6', pct: (data.cargo     / data.total * 100).toFixed(0) },
-    { label: 'Container',      val: data.container,  color: '#8b5cf6', pct: (data.container / data.total * 100).toFixed(0) },
-    { label: 'Naval',          val: data.naval,      color: '#ef4444', pct: (data.naval     / data.total * 100).toFixed(0) },
-    { label: 'Other',          val: data.other,      color: '#94a3b8', pct: (data.other     / data.total * 100).toFixed(0) },
-  ];
+function barChart(days, highlightDate) {
+  const max = Math.max(...days.map(d => d.total));
+  return days.map(d => {
+    const sel = d.date === highlightDate;
+    const h   = Math.round((d.total / max) * 52);
+    const lbl = fmtDate(d.date, { weekday: 'short' });
+    return `<div class="wk-bar-col ${sel ? 'selected' : ''}">
+      <div class="wk-bar-val">${d.total}</div>
+      <div class="wk-bar-wrap"><div class="wk-bar-fill" style="height:${h}px"></div></div>
+      <div class="wk-bar-day">${lbl}</div>
+    </div>`;
+  }).join('');
+}
 
-  const typeRows = types.map(t => `
-    <div class="ht-type-row">
-      <div class="ht-dot" style="background:${t.color}"></div>
-      <div class="ht-label">${t.label}</div>
-      <div class="ht-bar-wrap">
-        <div class="ht-bar-fill" style="width:${t.pct}%;background:${t.color}"></div>
+function totalCard(data, label) {
+  const avg   = 63;
+  const diff  = data.total - avg;
+  const col   = diff >= 0 ? '#52b788' : '#e76f51';
+  const arrow = diff >= 0 ? '▲' : '▼';
+  return `
+    <div class="hist-card">
+      <div class="hist-card-label">${label}</div>
+      <div class="hist-card-row">
+        <div class="hist-big-num">${data.total}</div>
+        <div class="hist-card-meta">
+          <div class="hist-ship-label">Ships Transited</div>
+          <div class="hist-diff" style="color:${col}">${arrow} ${Math.abs(diff)} vs avg</div>
+        </div>
       </div>
-      <div class="ht-count">${t.val}</div>
-    </div>`).join('');
+    </div>`;
+}
 
-  const displayDate = new Date(data.date + 'T12:00:00Z')
-    .toLocaleDateString('en', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+// ── Tab renderers ──────────────────────────────────────────────
+function showToday() {
+  const today = new Date().toISOString().slice(0, 10);
+  const data  = getDayData(today);
+  const week  = getLastNDays(7);
+  const label = fmtDate(today, { weekday: 'long', month: 'short', day: 'numeric' });
 
   document.getElementById('histResults').innerHTML = `
-    <div class="hist-date-label">${displayDate}</div>
+    ${totalCard(data, 'Today · ' + label)}
+    <div class="hist-week-chart">${barChart(week, today)}</div>
+    <div class="hist-section-title">Breakdown</div>
+    <div class="ht-types">${typeBreakdown(data)}</div>`;
+}
 
-    <div class="hist-total-row">
-      <div class="hist-total-num">${data.total}</div>
-      <div class="hist-total-info">
-        <div class="hist-total-label">Ships Transited</div>
-        <div class="hist-total-diff" style="color:${diffColor}">${diffStr} vs daily avg (${avg})</div>
+function showYesterday() {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  const yest  = d.toISOString().slice(0, 10);
+  const data  = getDayData(yest);
+  const week  = getLastNDays(7);
+  const label = fmtDate(yest, { weekday: 'long', month: 'short', day: 'numeric' });
+
+  document.getElementById('histResults').innerHTML = `
+    ${totalCard(data, 'Yesterday · ' + label)}
+    <div class="hist-week-chart">${barChart(week, yest)}</div>
+    <div class="hist-section-title">Breakdown</div>
+    <div class="ht-types">${typeBreakdown(data)}</div>`;
+}
+
+function showWeek() {
+  const days  = getLastNDays(7);
+  const total = days.reduce((s, d) => s + d.total, 0);
+  const agg   = {
+    total, date: days[days.length - 1].date,
+    tankers:   days.reduce((s, d) => s + d.tankers, 0),
+    lng:       days.reduce((s, d) => s + d.lng, 0),
+    cargo:     days.reduce((s, d) => s + d.cargo, 0),
+    container: days.reduce((s, d) => s + d.container, 0),
+    naval:     days.reduce((s, d) => s + d.naval, 0),
+    other:     days.reduce((s, d) => s + d.other, 0),
+  };
+  const avgWeek  = 63 * 7;
+  const diff     = total - avgWeek;
+  const col      = diff >= 0 ? '#52b788' : '#e76f51';
+  const arrow    = diff >= 0 ? '▲' : '▼';
+  const dailyAvg = (total / 7).toFixed(1);
+
+  document.getElementById('histResults').innerHTML = `
+    <div class="hist-card">
+      <div class="hist-card-label">Last 7 Days</div>
+      <div class="hist-card-row">
+        <div class="hist-big-num">${total}</div>
+        <div class="hist-card-meta">
+          <div class="hist-ship-label">Total Ships</div>
+          <div class="hist-diff" style="color:${col}">${arrow} ${Math.abs(diff)} vs avg week</div>
+        </div>
       </div>
+      <div class="hist-daily-avg">Daily average this week: <strong>${dailyAvg}</strong></div>
     </div>
-
-    <div class="hist-week-chart">${bars}</div>
-    <div class="hist-week-caption">7-day window</div>
-
-    <div class="ht-types">${typeRows}</div>
-  `;
-  document.getElementById('histResults').classList.remove('hidden');
+    <div class="hist-week-chart">${barChart(days, '')}</div>
+    <div class="hist-section-title">7-Day Breakdown</div>
+    <div class="ht-types">${typeBreakdown(agg)}</div>`;
 }
 
-function runHistSearch() {
-  const val = document.getElementById('histDate').value;
-  if (!val) { alert('Please pick a date.'); return; }
-
+function showCustomDate(dateStr) {
   const today = new Date().toISOString().slice(0, 10);
-  if (val > today) { alert('Cannot search future dates.'); return; }
+  if (dateStr > today) {
+    document.getElementById('histResults').innerHTML =
+      `<div class="hist-no-data">⛔ Cannot search future dates.</div>`;
+    return;
+  }
+  const data  = getDayData(dateStr);
+  const d     = new Date(dateStr + 'T12:00:00Z');
+  // build 7-day window centred on selected date
+  const win   = [];
+  for (let i = -3; i <= 3; i++) {
+    const nd = new Date(d);
+    nd.setUTCDate(d.getUTCDate() + i);
+    win.push(getDayData(nd.toISOString().slice(0, 10)));
+  }
+  const label = fmtDate(dateStr, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-  const data     = getDayData(val);
-  const weekData = getWeekData(val);
-  if (data) renderHistResults(data, weekData);
+  document.getElementById('histResults').innerHTML = `
+    ${totalCard(data, label)}
+    <div class="hist-week-chart">${barChart(win, dateStr)}</div>
+    <div class="hist-week-caption">±3 days window</div>
+    <div class="hist-section-title">Breakdown</div>
+    <div class="ht-types">${typeBreakdown(data)}</div>`;
 }
 
-document.getElementById('histSearchBtn').addEventListener('click', runHistSearch);
-document.getElementById('histDate').addEventListener('keydown', e => {
-  if (e.key === 'Enter') runHistSearch();
+// ── Tab switching ──────────────────────────────────────────────
+let activeTab = 'today';
+
+function switchTab(tab) {
+  activeTab = tab;
+  document.querySelectorAll('.htab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  const picker = document.getElementById('histDatepicker');
+  picker.style.display = tab === 'custom' ? 'flex' : 'none';
+  if (tab === 'today')     showToday();
+  if (tab === 'yesterday') showYesterday();
+  if (tab === 'week')      showWeek();
+  if (tab === 'custom') {
+    const v = document.getElementById('histDate').value;
+    if (v) showCustomDate(v);
+    else   document.getElementById('histResults').innerHTML =
+      `<div class="hist-no-data">Pick a date above and press Go.</div>`;
+  }
+}
+
+document.querySelectorAll('.htab').forEach(btn => {
+  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
 });
 
-// Default to today
+document.getElementById('histSearchBtn').addEventListener('click', () => {
+  const v = document.getElementById('histDate').value;
+  if (v) showCustomDate(v);
+});
+
+document.getElementById('histDate').addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const v = document.getElementById('histDate').value;
+    if (v) showCustomDate(v);
+  }
+});
+
+// Set default date to today and auto-load
 document.getElementById('histDate').value = new Date().toISOString().slice(0, 10);
+switchTab('today');
