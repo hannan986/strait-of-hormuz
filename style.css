@@ -924,22 +924,178 @@ body::before {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   RESPONSIVE
+   RESPONSIVE — TABLET
    ══════════════════════════════════════════════════════════════ */
 @media (max-width: 1024px) {
-  .sidebar { width: 250px; min-width: 250px; }
+  .sidebar { width: 255px; min-width: 255px; }
   .source-tabs .src-btn:last-child { display: none; }
 }
 
-@media (max-width: 720px) {
-  .sidebar { display: none; }
-  .sidebar.force-show {
-    display: flex;
-    position: absolute;
-    height: calc(100vh - 64px - 36px);
-    z-index: 300;
-    box-shadow: 4px 0 40px rgba(0,0,0,0.8);
+/* ══════════════════════════════════════════════════════════════
+   RESPONSIVE — MOBILE  (≤ 700px)
+   Sidebar becomes a bottom drawer sheet
+   ══════════════════════════════════════════════════════════════ */
+@media (max-width: 700px) {
+
+  /* ── Header ── */
+  .topbar {
+    height: auto;
+    padding: 10px 14px;
+    flex-wrap: wrap;
+    gap: 8px;
   }
-  .clock { display: none; }
-  .source-tabs { display: none; }
+
+  .logo-title { font-size: .82rem; letter-spacing: 1.5px; }
+  .logo-sub   { display: none; }
+  .logo-icon  { font-size: 1.4rem; }
+
+  .topbar-center { order: 3; width: 100%; justify-content: center; gap: 10px; }
+  .clock { font-size: .78rem; }
+
+  .source-tabs { display: none; }   /* moved into drawer */
+  .btn-menu    { display: none; }   /* replaced by FAB */
+
+  /* ── Layout: map fills screen ── */
+  .layout {
+    height: calc(100vh - var(--topbar-h, 90px) - 30px);
+    flex-direction: column;
+  }
+
+  /* ── Sidebar → bottom drawer ── */
+  .sidebar {
+    position: fixed !important;
+    bottom: 0; left: 0; right: 0;
+    width: 100% !important;
+    min-width: 100% !important;
+    max-height: 80vh;
+    border-radius: 22px 22px 0 0;
+    border-right: none;
+    border-top: 1px solid rgba(6,182,212,0.3);
+    transform: translateY(100%);
+    transition: transform .38s cubic-bezier(.4,0,.2,1);
+    z-index: 600;
+    box-shadow: 0 -8px 48px rgba(0,0,0,0.7), 0 0 0 1px rgba(6,182,212,0.1);
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .sidebar.mobile-open {
+    transform: translateY(0);
+  }
+
+  /* Drag handle at top of drawer */
+  .drawer-handle {
+    display: flex;
+    justify-content: center;
+    padding: 10px 0 4px;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+  .drawer-pill {
+    width: 40px; height: 4px;
+    background: rgba(6,182,212,0.4);
+    border-radius: 2px;
+  }
+
+  /* Mobile source selector row */
+  .mobile-sources {
+    display: flex !important;
+    gap: 6px;
+    padding: 8px 14px 4px;
+    flex-shrink: 0;
+  }
+
+  .msrc-btn {
+    flex: 1;
+    background: rgba(6,182,212,0.07);
+    border: 1px solid rgba(6,182,212,0.2);
+    color: var(--text-muted);
+    font-size: .68rem;
+    font-weight: 600;
+    padding: 8px 4px;
+    border-radius: 9px;
+    cursor: pointer;
+    transition: all .2s;
+    text-align: center;
+  }
+  .msrc-btn.active {
+    background: linear-gradient(135deg, var(--sea-teal), var(--turquoise));
+    border-color: var(--turquoise);
+    color: #fff;
+  }
+
+  /* Backdrop overlay */
+  .drawer-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(3px);
+    z-index: 590;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .3s;
+  }
+  .drawer-backdrop.visible {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  /* FAB button */
+  .fab {
+    display: flex !important;
+    align-items: center;
+    gap: 8px;
+    position: absolute;
+    bottom: 20px;
+    right: 16px;
+    background: linear-gradient(135deg, #0e4d7a, #0e7490);
+    border: 1px solid rgba(6,182,212,0.5);
+    border-radius: 28px;
+    color: #fff;
+    font-size: .78rem;
+    font-weight: 700;
+    padding: 12px 18px;
+    cursor: pointer;
+    z-index: 400;
+    box-shadow: 0 4px 24px rgba(6,182,212,0.4), 0 2px 8px rgba(0,0,0,0.5);
+    transition: transform .2s, box-shadow .2s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .fab:active { transform: scale(.95); }
+  .fab-icon   { font-size: 1.1rem; }
+
+  /* Panel inside drawer — bigger touch targets */
+  .panel { padding: 13px 16px; }
+
+  .htab, .hist-search-btn, .msrc-btn {
+    min-height: 40px;
+  }
+
+  .hist-date-input { font-size: .85rem; padding: 9px 11px; }
+
+  .fact-row    { padding: 8px 8px; font-size: .8rem; }
+  .port-item   { padding: 10px 10px; }
+  .lane-item   { padding: 10px 11px; }
+  .fg-item     { padding: 8px 10px; font-size: .78rem; }
+  .tl-row      { padding: 8px 10px; }
+
+  /* Ticker smaller */
+  .ticker-wrap  { height: 30px; }
+  .ticker-label { font-size: .58rem; padding: 0 10px; }
+  .ticker-content { font-size: .65rem; }
+
+  /* Strait marker smaller on mobile */
+  .sm-label-title { font-size: .7rem; letter-spacing: 1.5px; }
+  .sm-label-sub   { font-size: .58rem; }
+  .sm-ring-3      { width: 100px; height: 100px; }
+  .sm-ring-1      { width: 70px; height: 70px; }
+  .sm-ring-2      { width: 46px; height: 46px; }
+  .sm-dot         { width: 14px; height: 14px; }
 }
+
+/* ── Elements hidden on mobile by default ── */
+.drawer-handle  { display: none; }
+.mobile-sources { display: none; }
+.fab            { display: none; }
+.drawer-backdrop { display: none; }

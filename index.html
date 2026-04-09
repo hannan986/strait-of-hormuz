@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
   <title>Strait of Hormuz — Live Traffic Monitor</title>
-  <link rel="stylesheet" href="style.css?v=4" />
+  <link rel="stylesheet" href="style.css?v=5" />
 </head>
 <body>
 
@@ -37,6 +37,18 @@
   <!-- LEFT SIDEBAR -->
   <aside class="sidebar" id="sidebar">
 
+    <!-- Mobile drag handle -->
+    <div class="drawer-handle" id="drawerHandle">
+      <div class="drawer-pill"></div>
+    </div>
+
+    <!-- Mobile map source selector (only visible on mobile) -->
+    <div class="mobile-sources">
+      <button class="msrc-btn active" data-src="mt-satellite">🛰 Satellite</button>
+      <button class="msrc-btn" data-src="mt-terrain">🗺 Terrain</button>
+      <button class="msrc-btn" data-src="vesselfinder">VesselFinder</button>
+    </div>
+
     <!-- How to use tip -->
     <div class="tip-banner">
       <span class="tip-icon">💡</span>
@@ -46,23 +58,17 @@
     <!-- ── TRAFFIC HISTORY ── -->
     <div class="panel hist-panel">
       <div class="panel-header"><span>📅</span> Traffic by Date</div>
-
-      <!-- Quick tabs -->
       <div class="hist-tabs">
         <button class="htab active" data-tab="today">Today</button>
         <button class="htab" data-tab="yesterday">Yesterday</button>
         <button class="htab" data-tab="week">Last 7 Days</button>
         <button class="htab" data-tab="custom">📆 Pick Date</button>
       </div>
-
-      <!-- Custom date picker (hidden until "Pick Date" tab) -->
       <div class="hist-datepicker" id="histDatepicker">
         <input type="date" id="histDate" class="hist-date-input" />
         <button class="hist-search-btn" id="histSearchBtn">Go</button>
       </div>
-
-      <!-- Results area -->
-      <div id="histResults"><!-- filled by JS --></div>
+      <div id="histResults"></div>
     </div>
 
     <!-- Strait facts -->
@@ -86,29 +92,20 @@
       <div class="lanes-info">
         <div class="lane-item inbound">
           <div class="lane-dot"></div>
-          <div>
-            <div class="lane-name">Inbound Lane</div>
-            <div class="lane-desc">Gulf of Oman → Persian Gulf · Along Oman coast</div>
-          </div>
+          <div><div class="lane-name">Inbound Lane</div><div class="lane-desc">Gulf of Oman → Persian Gulf · Along Oman coast</div></div>
         </div>
         <div class="lane-item outbound">
           <div class="lane-dot"></div>
-          <div>
-            <div class="lane-name">Outbound Lane</div>
-            <div class="lane-desc">Persian Gulf → Gulf of Oman · Along Iran coast</div>
-          </div>
+          <div><div class="lane-name">Outbound Lane</div><div class="lane-desc">Persian Gulf → Gulf of Oman · Along Iran coast</div></div>
         </div>
         <div class="lane-item buffer">
           <div class="lane-dot"></div>
-          <div>
-            <div class="lane-name">Buffer Zone</div>
-            <div class="lane-desc">~3.2 km between lanes · Enforced by IMO since 1981</div>
-          </div>
+          <div><div class="lane-name">Buffer Zone</div><div class="lane-desc">~3.2 km between lanes · Enforced since 1981</div></div>
         </div>
       </div>
     </div>
 
-    <!-- Top flag states (factual) -->
+    <!-- Top flag states -->
     <div class="panel">
       <div class="panel-header"><span>🌍</span> Common Flag States</div>
       <div class="flag-grid">
@@ -155,7 +152,7 @@
 
   </aside>
 
-  <!-- MAP (LIVE IFRAME) -->
+  <!-- MAP -->
   <div class="map-container">
     <div class="map-loading" id="mapLoading">
       <div class="loading-spinner"></div>
@@ -189,9 +186,18 @@
       <span class="badge-dot"></span>
       Real AIS Data · <span id="badgeSource">MarineTraffic</span>
     </div>
+
+    <!-- Mobile FAB button -->
+    <button class="fab" id="fabBtn" aria-label="Open info panel">
+      <span class="fab-icon">📋</span>
+      <span class="fab-label">Info & Stats</span>
+    </button>
   </div>
 
 </div>
+
+<!-- Backdrop (mobile only) -->
+<div class="drawer-backdrop" id="drawerBackdrop"></div>
 
 <!-- TICKER -->
 <div class="ticker-wrap">
@@ -212,6 +218,6 @@
   </div>
 </div>
 
-<script src="app.js?v=4"></script>
+<script src="app.js?v=5"></script>
 </body>
 </html>

@@ -49,9 +49,44 @@ document.querySelectorAll('.src-btn').forEach(btn => {
   });
 });
 
-// ── Sidebar toggle ─────────────────────────────────────────────
+// ── Sidebar toggle (desktop) ───────────────────────────────────
 document.getElementById('toggleSidebar').addEventListener('click', () => {
   document.getElementById('sidebar').classList.toggle('hidden');
+});
+
+// ── Mobile drawer (FAB + backdrop + handle) ────────────────────
+const sidebar  = document.getElementById('sidebar');
+const backdrop = document.getElementById('drawerBackdrop');
+const fab      = document.getElementById('fabBtn');
+
+function openDrawer() {
+  sidebar.classList.add('mobile-open');
+  backdrop.classList.add('visible');
+  fab.style.display = 'none';
+}
+
+function closeDrawer() {
+  sidebar.classList.remove('mobile-open');
+  backdrop.classList.remove('visible');
+  fab.style.display = '';
+}
+
+fab.addEventListener('click', openDrawer);
+backdrop.addEventListener('click', closeDrawer);
+document.getElementById('drawerHandle').addEventListener('click', closeDrawer);
+
+// Mobile map source switcher (inside drawer)
+document.querySelectorAll('.msrc-btn').forEach(btn => {
+  btn.addEventListener('click', function () {
+    const src = SOURCES[this.dataset.src];
+    if (!src) return;
+    document.querySelectorAll('.msrc-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.src-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    loading.classList.remove('hidden');
+    iframe.src = src.url;
+    document.getElementById('badgeSource').textContent = src.label;
+  });
 });
 
 // ── Strait marker dismiss ──────────────────────────────────────
