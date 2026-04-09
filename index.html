@@ -3,10 +3,43 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
-  <title>Strait of Hormuz — Live Traffic Monitor</title>
-  <link rel="stylesheet" href="style.css?v=5" />
+  <title>Strait of Hormuz — Live Ship Tracker</title>
+  <link rel="stylesheet" href="style.css?v=6" />
 </head>
 <body>
+
+<!-- ═══════════════════════════════════════════════════
+     WELCOME MODAL (first-time visitors)
+════════════════════════════════════════════════════════ -->
+<div class="welcome-overlay" id="welcomeOverlay">
+  <div class="welcome-modal">
+    <div class="wm-emoji">🌊⚓🛢</div>
+    <h1 class="wm-title">Strait of Hormuz<br>Live Ship Tracker</h1>
+    <p class="wm-desc">Watch <strong>real ships</strong> crossing the world's most important oil shipping route — right now, in real time.</p>
+
+    <div class="wm-steps">
+      <div class="wm-step">
+        <div class="wm-step-icon">🗺</div>
+        <div class="wm-step-text"><strong>The Map</strong> shows real ships moving through the Strait</div>
+      </div>
+      <div class="wm-step">
+        <div class="wm-step-icon">👆</div>
+        <div class="wm-step-text"><strong>Tap any ship</strong> on the map to see its name, country &amp; speed</div>
+      </div>
+      <div class="wm-step">
+        <div class="wm-step-icon">📋</div>
+        <div class="wm-step-text"><strong>Info &amp; Stats button</strong> shows facts, daily ship counts &amp; more</div>
+      </div>
+    </div>
+
+    <div class="wm-fact">
+      💡 About <strong>20% of the world's oil</strong> passes through here every day — roughly 21 million barrels!
+    </div>
+
+    <button class="wm-btn" id="welcomeBtn">Got it — Show me the map! 🚢</button>
+    <div class="wm-skip" id="welcomeSkip">Don't show this again</div>
+  </div>
+</div>
 
 <!-- ═══════════════════ TOP BAR -->
 <header class="topbar">
@@ -14,7 +47,7 @@
     <div class="logo-icon">⚓</div>
     <div class="logo-text">
       <span class="logo-title">STRAIT OF HORMUZ</span>
-      <span class="logo-sub">Live Maritime Traffic Monitor</span>
+      <span class="logo-sub">Live Ship Tracker</span>
     </div>
   </div>
   <div class="topbar-center">
@@ -24,7 +57,7 @@
   <div class="topbar-right">
     <div class="source-tabs">
       <button class="src-btn active" data-src="mt-satellite">🛰 Satellite</button>
-      <button class="src-btn" data-src="mt-terrain">🗺 Terrain</button>
+      <button class="src-btn" data-src="mt-terrain">🗺 Map View</button>
       <button class="src-btn" data-src="vesselfinder">VesselFinder</button>
     </div>
     <button class="btn-menu" id="toggleSidebar">&#9776;</button>
@@ -44,111 +77,169 @@
       <button class="drawer-close-btn" id="drawerCloseBtn">✕ Close</button>
     </div>
 
-    <!-- Mobile map source selector (only visible on mobile) -->
+    <!-- Mobile map source selector -->
     <div class="mobile-sources">
       <button class="msrc-btn active" data-src="mt-satellite">🛰 Satellite</button>
-      <button class="msrc-btn" data-src="mt-terrain">🗺 Terrain</button>
+      <button class="msrc-btn" data-src="mt-terrain">🗺 Map</button>
       <button class="msrc-btn" data-src="vesselfinder">VesselFinder</button>
     </div>
 
-    <!-- How to use tip -->
-    <div class="tip-banner">
-      <span class="tip-icon">💡</span>
-      <span>Click any vessel on the map to see its name, flag, country, speed &amp; destination in real time.</span>
+    <!-- What is this? -->
+    <div class="explainer-banner">
+      <div class="eb-title">🌍 What is the Strait of Hormuz?</div>
+      <div class="eb-text">
+        A narrow sea passage between <strong>Iran</strong> and <strong>Oman/UAE</strong>.
+        It is the world's most important oil shipping route —
+        every oil tanker going to or from the Persian Gulf must pass through here.
+      </div>
     </div>
 
-    <!-- ── TRAFFIC HISTORY ── -->
+    <!-- ── DAILY SHIP COUNT ── -->
     <div class="panel hist-panel">
-      <div class="panel-header"><span>📅</span> Traffic by Date</div>
+      <div class="panel-header"><span>📅</span> How Many Ships Passed?</div>
+      <div class="hist-helper">Pick a time period to see how many ships crossed the Strait:</div>
       <div class="hist-tabs">
         <button class="htab active" data-tab="today">Today</button>
         <button class="htab" data-tab="yesterday">Yesterday</button>
         <button class="htab" data-tab="week">Last 7 Days</button>
-        <button class="htab" data-tab="custom">📆 Pick Date</button>
+        <button class="htab" data-tab="custom">📆 Any Date</button>
       </div>
       <div class="hist-datepicker" id="histDatepicker">
         <input type="date" id="histDate" class="hist-date-input" />
-        <button class="hist-search-btn" id="histSearchBtn">Go</button>
+        <button class="hist-search-btn" id="histSearchBtn">Search</button>
       </div>
       <div id="histResults"></div>
     </div>
 
-    <!-- Strait facts -->
+    <!-- Strait facts — plain language -->
     <div class="panel">
-      <div class="panel-header"><span>🌊</span> Strait Overview</div>
+      <div class="panel-header"><span>📌</span> Quick Facts</div>
       <div class="fact-list">
-        <div class="fact-row"><span class="fact-label">Location</span><span class="fact-val">26°N, 56°E</span></div>
-        <div class="fact-row"><span class="fact-label">Min width</span><span class="fact-val">~39 km</span></div>
-        <div class="fact-row"><span class="fact-label">Depth</span><span class="fact-val">60 – 100 m</span></div>
-        <div class="fact-row"><span class="fact-label">Borders</span><span class="fact-val">Iran · Oman · UAE</span></div>
-        <div class="fact-row"><span class="fact-label">Daily vessels</span><span class="fact-val">~50 – 100</span></div>
-        <div class="fact-row"><span class="fact-label">Monthly transits</span><span class="fact-val">~1,700+</span></div>
-        <div class="fact-row"><span class="fact-label">Oil transit</span><span class="fact-val">~20% world supply</span></div>
-        <div class="fact-row"><span class="fact-label">Oil volume/day</span><span class="fact-val">~21M barrels</span></div>
+        <div class="fact-row"><span class="fact-label">📍 Location</span><span class="fact-val">26°N, 56°E</span></div>
+        <div class="fact-row"><span class="fact-label">📏 Narrowest point</span><span class="fact-val">~39 km wide</span></div>
+        <div class="fact-row"><span class="fact-label">🌊 Water depth</span><span class="fact-val">60 – 100 metres</span></div>
+        <div class="fact-row"><span class="fact-label">🏳 Borders</span><span class="fact-val">Iran · Oman · UAE</span></div>
+        <div class="fact-row"><span class="fact-label">🚢 Ships per day</span><span class="fact-val">50 – 100 ships</span></div>
+        <div class="fact-row"><span class="fact-label">🛢 Oil per day</span><span class="fact-val">~21 million barrels</span></div>
+        <div class="fact-row"><span class="fact-label">⚡ % of world oil</span><span class="fact-val">~20% of supply</span></div>
       </div>
     </div>
 
-    <!-- Traffic lanes -->
+    <!-- Shipping lanes — plain language -->
     <div class="panel">
-      <div class="panel-header"><span>🔄</span> Traffic Separation Scheme</div>
+      <div class="panel-header"><span>🛣</span> How Ships Travel Through</div>
+      <div class="lanes-helper">Ships must follow strict lanes — like a motorway at sea:</div>
       <div class="lanes-info">
         <div class="lane-item inbound">
           <div class="lane-dot"></div>
-          <div><div class="lane-name">Inbound Lane</div><div class="lane-desc">Gulf of Oman → Persian Gulf · Along Oman coast</div></div>
+          <div>
+            <div class="lane-name">🟢 Entering the Gulf</div>
+            <div class="lane-desc">Ships heading INTO the Persian Gulf travel along the Oman coastline (right side)</div>
+          </div>
         </div>
         <div class="lane-item outbound">
           <div class="lane-dot"></div>
-          <div><div class="lane-name">Outbound Lane</div><div class="lane-desc">Persian Gulf → Gulf of Oman · Along Iran coast</div></div>
+          <div>
+            <div class="lane-name">🔴 Leaving the Gulf</div>
+            <div class="lane-desc">Ships heading OUT towards the open sea travel along the Iran coastline (left side)</div>
+          </div>
         </div>
         <div class="lane-item buffer">
           <div class="lane-dot"></div>
-          <div><div class="lane-name">Buffer Zone</div><div class="lane-desc">~3.2 km between lanes · Enforced since 1981</div></div>
+          <div>
+            <div class="lane-name">⚪ Safety Gap</div>
+            <div class="lane-desc">A 3.2 km empty zone between the two lanes — like a motorway central reservation</div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Top flag states -->
+    <!-- Ship types — very plain language -->
     <div class="panel">
-      <div class="panel-header"><span>🌍</span> Common Flag States</div>
+      <div class="panel-header"><span>🚢</span> Types of Ships You Can See</div>
+      <div class="type-legend">
+        <div class="tl-row">
+          <span class="tl-dot" style="background:#f59e0b"></span>
+          <div class="tl-info"><span class="tl-label">🛢 Oil Tanker</span><span class="tl-sub">Carries crude oil — the largest ships here (~35%)</span></div>
+        </div>
+        <div class="tl-row">
+          <span class="tl-dot" style="background:#06b6d4"></span>
+          <div class="tl-info"><span class="tl-label">💨 Gas Carrier</span><span class="tl-sub">Carries natural gas (LNG/LPG) in frozen form (~18%)</span></div>
+        </div>
+        <div class="tl-row">
+          <span class="tl-dot" style="background:#3b82f6"></span>
+          <div class="tl-info"><span class="tl-label">📦 Cargo Ship</span><span class="tl-sub">Carries goods, food, materials (~22%)</span></div>
+        </div>
+        <div class="tl-row">
+          <span class="tl-dot" style="background:#8b5cf6"></span>
+          <div class="tl-info"><span class="tl-label">📫 Container Ship</span><span class="tl-sub">Carries shipping containers (like you see at ports) (~12%)</span></div>
+        </div>
+        <div class="tl-row">
+          <span class="tl-dot" style="background:#ef4444"></span>
+          <div class="tl-info"><span class="tl-label">⚓ Navy Ship</span><span class="tl-sub">Military / patrol vessels (~5%)</span></div>
+        </div>
+        <div class="tl-row">
+          <span class="tl-dot" style="background:#22c55e"></span>
+          <div class="tl-info"><span class="tl-label">🎣 Other Vessels</span><span class="tl-sub">Fishing boats, tugs, ferries etc. (~8%)</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Major ports — plain language -->
+    <div class="panel">
+      <div class="panel-header"><span>⚓</span> Major Ports Nearby</div>
+      <div class="ports-list">
+        <div class="port-item">
+          <span class="port-flag">🇮🇷</span>
+          <div>
+            <div class="port-name">Bandar Abbas</div>
+            <div class="port-sub">Iran's largest port — oil &amp; general cargo</div>
+          </div>
+        </div>
+        <div class="port-item">
+          <span class="port-flag">🇦🇪</span>
+          <div>
+            <div class="port-name">Fujairah (UAE)</div>
+            <div class="port-sub">Where ships refuel — biggest refuelling hub in the world</div>
+          </div>
+        </div>
+        <div class="port-item">
+          <span class="port-flag">🇦🇪</span>
+          <div>
+            <div class="port-name">Jebel Ali (UAE)</div>
+            <div class="port-sub">Largest port in the Middle East</div>
+          </div>
+        </div>
+        <div class="port-item">
+          <span class="port-flag">🇸🇦</span>
+          <div>
+            <div class="port-name">Ras Tanura (Saudi Arabia)</div>
+            <div class="port-sub">World's largest oil loading terminal</div>
+          </div>
+        </div>
+        <div class="port-item">
+          <span class="port-flag">🇶🇦</span>
+          <div>
+            <div class="port-name">Ras Laffan (Qatar)</div>
+            <div class="port-sub">World's largest natural gas export terminal</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Flag states — plain language -->
+    <div class="panel">
+      <div class="panel-header"><span>🌍</span> Common Ship Flags</div>
+      <div class="flag-helper">Ships are registered (flagged) in these countries. Many use Panama/Liberia as they have easy registration rules:</div>
       <div class="flag-grid">
         <div class="fg-item"><span>🇵🇦</span><span>Panama</span></div>
-        <div class="fg-item"><span>🇲🇭</span><span>Marshall Is.</span></div>
+        <div class="fg-item"><span>🇲🇭</span><span>Marshall Islands</span></div>
         <div class="fg-item"><span>🇱🇷</span><span>Liberia</span></div>
         <div class="fg-item"><span>🇧🇸</span><span>Bahamas</span></div>
         <div class="fg-item"><span>🇲🇹</span><span>Malta</span></div>
         <div class="fg-item"><span>🇸🇬</span><span>Singapore</span></div>
         <div class="fg-item"><span>🇬🇷</span><span>Greece</span></div>
         <div class="fg-item"><span>🇨🇾</span><span>Cyprus</span></div>
-        <div class="fg-item"><span>🇨🇳</span><span>China</span></div>
-        <div class="fg-item"><span>🇯🇵</span><span>Japan</span></div>
-        <div class="fg-item"><span>🇳🇴</span><span>Norway</span></div>
-        <div class="fg-item"><span>🇰🇷</span><span>S. Korea</span></div>
-      </div>
-    </div>
-
-    <!-- Vessel types -->
-    <div class="panel">
-      <div class="panel-header"><span>🚢</span> Vessel Types</div>
-      <div class="type-legend">
-        <div class="tl-row"><span class="tl-dot" style="background:#f59e0b"></span><span class="tl-label">Oil Tanker / VLCC</span><span class="tl-pct">~35%</span></div>
-        <div class="tl-row"><span class="tl-dot" style="background:#06b6d4"></span><span class="tl-label">LNG / LPG Tanker</span><span class="tl-pct">~18%</span></div>
-        <div class="tl-row"><span class="tl-dot" style="background:#3b82f6"></span><span class="tl-label">Bulk / Cargo</span><span class="tl-pct">~22%</span></div>
-        <div class="tl-row"><span class="tl-dot" style="background:#8b5cf6"></span><span class="tl-label">Container Ship</span><span class="tl-pct">~12%</span></div>
-        <div class="tl-row"><span class="tl-dot" style="background:#ef4444"></span><span class="tl-label">Naval / Military</span><span class="tl-pct">~5%</span></div>
-        <div class="tl-row"><span class="tl-dot" style="background:#22c55e"></span><span class="tl-label">Fishing / Other</span><span class="tl-pct">~8%</span></div>
-      </div>
-    </div>
-
-    <!-- Key Ports -->
-    <div class="panel">
-      <div class="panel-header"><span>⚓</span> Key Ports</div>
-      <div class="ports-list">
-        <div class="port-item"><span class="port-flag">🇮🇷</span><div><div class="port-name">Bandar Abbas</div><div class="port-sub">Iran · Major oil &amp; container terminal</div></div></div>
-        <div class="port-item"><span class="port-flag">🇦🇪</span><div><div class="port-name">Fujairah</div><div class="port-sub">UAE · World's largest bunkering hub</div></div></div>
-        <div class="port-item"><span class="port-flag">🇦🇪</span><div><div class="port-name">Jebel Ali</div><div class="port-sub">UAE · Largest port in the region</div></div></div>
-        <div class="port-item"><span class="port-flag">🇸🇦</span><div><div class="port-name">Ras Tanura</div><div class="port-sub">Saudi Arabia · Largest oil export terminal</div></div></div>
-        <div class="port-item"><span class="port-flag">🇴🇲</span><div><div class="port-name">Khasab</div><div class="port-sub">Oman · Musandam Peninsula gateway</div></div></div>
-        <div class="port-item"><span class="port-flag">🇶🇦</span><div><div class="port-name">Ras Laffan</div><div class="port-sub">Qatar · Largest LNG export terminal</div></div></div>
       </div>
     </div>
 
@@ -158,7 +249,7 @@
   <div class="map-container">
     <div class="map-loading" id="mapLoading">
       <div class="loading-spinner"></div>
-      <div class="loading-text">Loading live vessel traffic…</div>
+      <div class="loading-text">Loading live ship traffic…</div>
     </div>
 
     <iframe
@@ -166,7 +257,7 @@
       src="https://www.marinetraffic.com/en/ais/embed/zoom:9/centery:26.2/centerx:56.5/maptype:1/shownames:true/mmsi:0/shipid:0/fleet:/fleet_id:/vtypes:/showmenu:false/remember:false"
       frameborder="0"
       allowfullscreen
-      title="Live Strait of Hormuz vessel tracking"
+      title="Live Strait of Hormuz ship tracking"
     ></iframe>
 
     <!-- Strait marker -->
@@ -179,14 +270,21 @@
       </div>
       <div class="sm-label">
         <span class="sm-label-title">STRAIT OF HORMUZ</span>
-        <span class="sm-label-sub">26°N · 56°E · World's Key Oil Chokepoint</span>
+        <span class="sm-label-sub">26°N · 56°E · World's Key Oil Shipping Route</span>
       </div>
       <button class="sm-close" id="closeMarker">✕</button>
     </div>
 
+    <!-- Map tap hint -->
+    <div class="map-hint" id="mapHint">
+      <span class="mh-hand">👆</span>
+      <span>Tap any coloured dot to see ship details</span>
+      <button class="mh-close" id="mapHintClose">✕</button>
+    </div>
+
     <div class="map-badge">
       <span class="badge-dot"></span>
-      Real AIS Data · <span id="badgeSource">MarineTraffic</span>
+      Live Ships · <span id="badgeSource">MarineTraffic</span>
     </div>
 
     <!-- Mobile FAB button -->
@@ -199,28 +297,28 @@
 
 </div>
 
-<!-- Backdrop (mobile only) -->
+<!-- Backdrop -->
 <div class="drawer-backdrop" id="drawerBackdrop"></div>
 
 <!-- TICKER -->
 <div class="ticker-wrap">
   <span class="ticker-label">LIVE</span>
   <div class="ticker-content">
-    🛢 Oil Tankers · LNG Carriers · Cargo Ships transiting in real time &nbsp;·&nbsp;
-    Click any vessel on the map to see: flag country, vessel name, speed, destination &nbsp;·&nbsp;
-    ~21 million barrels of oil pass through daily &nbsp;·&nbsp;
-    Traffic Separation Scheme enforced since 1981 &nbsp;·&nbsp;
-    Top flag states: 🇵🇦 Panama · 🇲🇭 Marshall Islands · 🇱🇷 Liberia · 🇧🇸 Bahamas · 🇲🇹 Malta &nbsp;·&nbsp;
-    Bordering countries: 🇮🇷 Iran · 🇴🇲 Oman · 🇦🇪 UAE &nbsp;·&nbsp;
-    🛢 Oil Tankers · LNG Carriers · Cargo Ships transiting in real time &nbsp;·&nbsp;
-    Click any vessel on the map to see: flag country, vessel name, speed, destination &nbsp;·&nbsp;
-    ~21 million barrels of oil pass through daily &nbsp;·&nbsp;
-    Traffic Separation Scheme enforced since 1981 &nbsp;·&nbsp;
-    Top flag states: 🇵🇦 Panama · 🇲🇭 Marshall Islands · 🇱🇷 Liberia · 🇧🇸 Bahamas · 🇲🇹 Malta &nbsp;·&nbsp;
-    Bordering countries: 🇮🇷 Iran · 🇴🇲 Oman · 🇦🇪 UAE &nbsp;·&nbsp;
+    🛢 Real oil tankers &amp; cargo ships are crossing right now &nbsp;·&nbsp;
+    Tap any ship on the map to see where it's from and where it's going &nbsp;·&nbsp;
+    About 20% of the world's oil passes through here every single day &nbsp;·&nbsp;
+    The Strait is only 39 km wide at its narrowest point &nbsp;·&nbsp;
+    Ships must follow strict lanes — like a motorway at sea &nbsp;·&nbsp;
+    Borders: 🇮🇷 Iran on one side, 🇴🇲 Oman &amp; 🇦🇪 UAE on the other &nbsp;·&nbsp;
+    🛢 Real oil tankers &amp; cargo ships are crossing right now &nbsp;·&nbsp;
+    Tap any ship on the map to see where it's from and where it's going &nbsp;·&nbsp;
+    About 20% of the world's oil passes through here every single day &nbsp;·&nbsp;
+    The Strait is only 39 km wide at its narrowest point &nbsp;·&nbsp;
+    Ships must follow strict lanes — like a motorway at sea &nbsp;·&nbsp;
+    Borders: 🇮🇷 Iran on one side, 🇴🇲 Oman &amp; 🇦🇪 UAE on the other &nbsp;·&nbsp;
   </div>
 </div>
 
-<script src="app.js?v=5"></script>
+<script src="app.js?v=6"></script>
 </body>
 </html>

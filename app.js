@@ -3,6 +3,34 @@
    No API key required — live data via embedded map iframe
    ══════════════════════════════════════════════════════════════ */
 
+// ── Welcome modal ──────────────────────────────────────────────
+(function () {
+  const overlay = document.getElementById('welcomeOverlay');
+  if (!overlay) return;
+
+  // If user previously clicked "Don't show again", skip the modal
+  if (localStorage.getItem('hormuz-welcome-seen') === '1') {
+    overlay.classList.add('hidden');
+    return;
+  }
+
+  function dismissModal() {
+    overlay.classList.add('hidden');
+  }
+
+  document.getElementById('welcomeBtn').addEventListener('click', dismissModal);
+
+  document.getElementById('welcomeSkip').addEventListener('click', function () {
+    localStorage.setItem('hormuz-welcome-seen', '1');
+    dismissModal();
+  });
+
+  // Tapping the dark backdrop also closes it
+  overlay.addEventListener('click', function (e) {
+    if (e.target === overlay) dismissModal();
+  });
+})();
+
 // ── UTC Clock ──────────────────────────────────────────────────
 function updateClock() {
   const n = new Date();
@@ -328,3 +356,12 @@ document.getElementById('histDate').addEventListener('keydown', e => {
 // Set default date to today and auto-load
 document.getElementById('histDate').value = new Date().toISOString().slice(0, 10);
 switchTab('today');
+
+// ── Map hint dismiss ───────────────────────────────────────────
+const mapHint     = document.getElementById('mapHint');
+const mapHintClose = document.getElementById('mapHintClose');
+if (mapHintClose) {
+  mapHintClose.addEventListener('click', () => mapHint.classList.add('hidden'));
+}
+// Auto-hide map hint after 8 seconds
+setTimeout(() => { if (mapHint) mapHint.classList.add('hidden'); }, 8000);
